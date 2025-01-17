@@ -9,14 +9,14 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 final class TaskVoter extends Voter
 {
-    public const EDIT = 'POST_EDIT';
-    public const VIEW = 'POST_VIEW';
+    public const EDIT = 'TASK_EDIT';
+    public const VIEW = 'TASK_VIEW';
+    public const DELETE = 'TASK_DELETE';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        // replace with your own logic
-        // https://symfony.com/doc/current/security/voters.html
-        return in_array($attribute, [self::EDIT, self::VIEW])
+
+        return in_array($attribute, [self::EDIT, self::VIEW, self::DELETE])
             && $subject instanceof Task;
     }
 
@@ -24,25 +24,30 @@ final class TaskVoter extends Voter
     {
         $user = $token->getUser();
 
-        // if the user is anonymous, do not grant access
         if (!$user instanceof UserInterface) {
             return false;
         }
 
         /** @var Task $task */
         $task = $subject;
-        // ... (check conditions and return true to grant permission) ...
+
+        // perm admin
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            return true;
+        }
+
         switch ($attribute) {
             case self::EDIT:
-                // logic to determine if the user can EDIT
-                // return true or false
-
-                break;
+                // un user peut seulement modifier ses taches
+                 if($task->getAuthor() === $user) return true;
 
             case self::VIEW:
-                // logic to determine if the user can VIEW
-                // return true or false
-                break;
+                // un user peut seulement voir ses taches
+                if($task->getAuthor() === $user) return true;
+
+            case self::DELETE:
+                // les users ne peuvent rien supprimer
+                return false;
         }
 
         return false;
