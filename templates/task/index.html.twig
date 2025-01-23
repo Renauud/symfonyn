@@ -1,20 +1,34 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello TaskController!{% endblock %}
-
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/zrena/Desktop/vsc/symfony_boilerplate/src/Controller/TaskController.php</code></li>
-        <li>Your template at <code>C:/Users/zrena/Desktop/vsc/symfony_boilerplate/templates/task/index.html.twig</code></li>
-    </ul>
+<div class="container mx-auto p-8">
+    <h1 class="text-2xl font-bold mb-6">Liste des tâches</h1>
+    <div class="flex justify-end mb-4">
+        <a href="{{ path('task_create') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Créer une tâche
+        </a>
+    </div>
+    <table class="table-auto w-full border-collapse border border-gray-300">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="border border-gray-300 px-4 py-2">ID</th>
+                <th class="border border-gray-300 px-4 py-2">Titre</th>
+                <th class="border border-gray-300 px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+                <tr class="hover:bg-gray-50">
+                    <td class="border border-gray-300 px-4 py-2">{{ task.id }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{{ task.title }}</td>
+                    <td class="border border-gray-300 px-4 py-2">
+                        <a href="{{ path('task_view', { id: task.id }) }}" class="text-blue-500 hover:underline mr-2">Voir</a>
+                        <a href="{{ path('task_edit', { id: task.id }) }}" class="text-yellow-500 hover:underline mr-2">Modifier</a>
+                        <a href="{{ path('task_delete', { id: task.id }) }}" class="text-red-500 hover:underline">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

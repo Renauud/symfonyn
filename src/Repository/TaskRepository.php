@@ -16,12 +16,27 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
 
-    public function listAllTasks()
+    public function listAllTasks():Task
     {
-        $this->createQueryBuilder('l');
+        $query = $this->createQueryBuilder('t')
+        ->select('t.id', 't.name', 't.description', 't.createdAt', 't.updatedAt', 't.author')
+        ->orderBy('t.createdAt', 'DESC');
+
+        $query = $query->getQuery();
+
+        return $query->getResult();
     }
 
-    public function createTask(){}
+    public function createTask(string $name, string $description, string $author): Task
+    {
+        $task = new Task();
+        $task->setName($name);
+        $task->setDescription($description);
+        $task->setAuthor($author);
+
+        return $task;
+    }
+
     public function editTask(){}
     public function viewTask(){}
     public function deleteTask(){}
