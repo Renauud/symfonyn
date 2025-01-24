@@ -37,10 +37,38 @@ class TaskRepository extends ServiceEntityRepository
         return $task;
     }
 
-    public function editTask(){}
-    public function viewTask(){}
+    public function editTask(int $taskId, string $name, string $description){
+
+        $query = $this->createQueryBuilder('t')
+        ->update()
+        ->set('t.name', ':name')
+        ->set('t.description', ':description')
+        ->set('t.updatedAt', ':updatedAt')
+        ->where('t.id = :taskId')
+        ->setParameter('name', $name)
+        ->setParameter('description', $description)
+        ->setParameter('updatedAt', new \DateTimeImmutable())
+        ->setParameter('taskId', $taskId);
+
+        $query = $query->getQuery();
+
+        return $query->getResult();
+
+    }
+
+    public function viewTask(int $taskId){
+        $query = $this->createQueryBuilder('t')
+        ->select('t')
+        ->where('t.id = :taskId')
+        ->setParameter('taskId', $taskId);
+
+        $query = $query->getQuery();
+
+        return $query->getOneOrNullResult();
+    }
+
     public function deleteTask(int $taskId){
-        
+
         $query = $this->createQueryBuilder('t')
         ->delete()
         ->where('t.id = :taskId')

@@ -50,15 +50,55 @@ class TaskController extends AbstractController
         ]);
     }
 
-    #[Route('/task/edit/{id}', name: 'task_edit')]
-    public function editTask(){
-        return $this->render('task/edit.html.twig');
+    #[Route('/task/edit/{id}', name: 'task_edit', methods: ['GET', 'POST'])]
+    public function editTask(int $id, Request $request, TaskRepository $taskRepository
+    ): Response {
+        // recupere la tache existante
+        $task = $taskRepository->find($id);
+    
+        if (!$task) {
+            $this->addFlash('error', 'Aucune tâche trouvée avec cet identifiant.');
+            return $this->redirectToRoute('task_index');
+        }
+    
+        // crée le form avec les data prerempli
+        $form = $this->createForm(TaskType::class, $task);
+        $form->handleRequest($request);
+    
+        if ($form->isSubmitted() && $form->isValid()) {
 
+            $data = $form->getData();
+    
+            $taskRepository->editTask(
+                $task->getId(),
+                $data->getName(),
+                $data->getDescription(),
+            );
+    
+            $this->addFlash('success', 'La tâche a été mise à jour avec succès.');
+            return $this->redirectToRoute('task_view', ['id' => $task->getId()]);
+        }
+    
+        return $this->render('task/edit.html.twig', [
+            'form' => $form->createView(),
+            'task' => $task,
+        ]);
     }
+    
 
     #[Route('/task/view/{id}', name: 'task_view')]
-    public function viewTask(){
-        return $this->render('task/view.html.twig');
+    public function viewTask(TaskRepository $taskRepository, int $id){
+
+        $task = $taskRepository->viewTask($id);
+
+        if (!$task) {
+            $this->addFlash('error', 'Aucune tâche trouvée avec cet identifiant.');
+            return $this->redirectToRoute('task_index');
+        }
+
+        return $this->render('task/view.html.twig', [
+            'task' => $task,
+        ]);
 
     }
 
