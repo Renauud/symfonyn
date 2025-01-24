@@ -35,13 +35,14 @@ class TaskController extends AbstractController
             $task->getName();
             $task->getDescription();
             $task->setAuthor('AuteurTemp'); // temporaire : remplacer par l'user qd on pourra se connecter
+            $task->prePersist(); // ETRANGE que j'ai besoin de l'appeler etant donne que la methode est annote PrePersist et PreUpdate mais je n'arrive pas a la faire fonctionner d'une autre maniere
 
             $em->persist($task);
             $em->flush();
 
             $this->addFlash('success', 'Tâche créée avec succès !');
 
-            return $this->redirectToRoute('/task/index');
+            return $this->redirectToRoute('task_index');
         }
 
         return $this->render('task/create.html.twig', [
@@ -49,18 +50,29 @@ class TaskController extends AbstractController
         ]);
     }
 
-    #[Route('/task/edit', name: 'task_edit')]
+    #[Route('/task/edit/{id}', name: 'task_edit')]
     public function editTask(){
         return $this->render('task/edit.html.twig');
 
     }
 
-    #[Route('/task/view', name: 'task_view')]
+    #[Route('/task/view/{id}', name: 'task_view')]
     public function viewTask(){
         return $this->render('task/view.html.twig');
 
     }
 
-    #[Route('/task/delete', name: 'task_delete')]
-    public function deleteTask(){}
+    #[Route('/task/delete/{id}', name: 'task_delete')]
+    public function deleteTask(int $id, TaskRepository $taskRepository): Response
+    {
+        $affectedRows = $taskRepository->deleteTask($id);
+
+        if ($affectedRows > 0) {
+            $this->addFlash('success', 'Tâche supprimée avec succès !');
+        } else {
+            $this->addFlash('error', 'Aucune tâche trouvée avec cet id.');
+        }
+
+        return $this->redirectToRoute('task_index');
+    }
 }

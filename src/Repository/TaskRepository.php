@@ -16,7 +16,7 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
 
-    public function listAllTasks():Task
+    public function listAllTasks()
     {
         $query = $this->createQueryBuilder('t')
         ->select('t.id', 't.name', 't.description', 't.createdAt', 't.updatedAt', 't.author')
@@ -39,7 +39,17 @@ class TaskRepository extends ServiceEntityRepository
 
     public function editTask(){}
     public function viewTask(){}
-    public function deleteTask(){}
+    public function deleteTask(int $taskId){
+        
+        $query = $this->createQueryBuilder('t')
+        ->delete()
+        ->where('t.id = :taskId')
+        ->setParameter('taskId', $taskId);
+
+        $query = $query->getQuery();
+
+        return $query->getResult();
+    }
 
 
     //    /**
