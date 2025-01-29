@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Task;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
+use App\Services\TaskService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,7 +36,7 @@ class TaskController extends AbstractController
             $task->getName();
             $task->getDescription();
             $task->setAuthor('AuteurTemp'); // temporaire : remplacer par l'user qd on pourra se connecter
-            $task->prePersist(); // ETRANGE que j'ai besoin de l'appeler etant donne que la methode est annote PrePersist et PreUpdate mais je n'arrive pas a la faire fonctionner d'une autre maniere
+            $task->updateTimestamps(); // ETRANGE que j'ai besoin de l'appeler etant donne que la methode est annote PrePersist et PreUpdate mais je n'arrive pas a la faire fonctionner d'une autre maniere
 
             $em->persist($task);
             $em->flush();
@@ -51,8 +52,8 @@ class TaskController extends AbstractController
     }
 
     #[Route('/task/edit/{id}', name: 'task_edit', methods: ['GET', 'POST'])]
-    public function editTask(int $id, Request $request, TaskRepository $taskRepository
-    ): Response {
+    public function editTask(int $id, Request $request, TaskRepository $taskRepository, TaskService $taskService): Response {
+
         // recupere la tache existante
         $task = $taskRepository->find($id);
     
@@ -68,15 +69,20 @@ class TaskController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
 
             $data = $form->getData();
-    
-            $taskRepository->editTask(
-                $task->getId(),
-                $data->getName(),
-                $data->getDescription(),
-            );
-    
-            $this->addFlash('success', 'La tâche a été mise à jour avec succès.');
+
+            if($taskService->canEdit($task->getCreatedAt())){
+                $taskRepository->editTask(
+                    $task->getId(),
+                    $data->getName(),
+                    $data->getDescription(),
+                );
+        
+                $this->addFlash('success', 'La tâche a été mise à jour avec succès.');
+                
+            }else $this->addFlash('error', 'La tâche a été créée il y a plus de 3 jours et ne peut donc pas être modifiée.');
+            
             return $this->redirectToRoute('task_view', ['id' => $task->getId()]);
+
         }
     
         return $this->render('task/edit.html.twig', [

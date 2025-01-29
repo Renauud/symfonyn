@@ -12,6 +12,17 @@
         {% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="p-4 mb-4 rounded-lg 
+                        {% if type == 'success' %} bg-green-100 text-green-700 border border-green-500 
+                        {% elseif type == 'error' %} bg-red-100 text-red-700 border border-red-500 
+                        {% else %} bg-gray-100 text-gray-700 border border-gray-500 {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        {% block body %}
+        {% endblock %}
     </body>
 </html>
